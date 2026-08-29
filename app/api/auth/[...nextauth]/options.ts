@@ -3,6 +3,16 @@ import { User } from "@/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import * as z from "zod";
+
+const loginSchema = z.object({
+  identifier: z
+    .string("Identifier must be a string")
+    .min(1, { error: "Username or email is required!" }),
+  password: z
+    .string("Password must be a string")
+    .min(1, { error: "Password is required!" }),
+});
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,17 +24,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req): Promise<any> {
-        if (!credentials?.identifier || !credentials?.password) {
-          throw new Error("Missing required fields!");
+        const result = loginSchema.safeParse(credentials);
+
+        if (!result.success) {
+          throw new Error(result.error.issues[0].message);
         }
 
-        await connectDB();
+        const { identifier, password } = result.data;
 
         try {
+          await connectDB();
           const user = await User.findOne({
             $or: [
-              { username: credentials.identifier.toLowerCase().trim() },
-              { email: credentials.identifier.trim() },
+              { username: identifier.toLowerCase().trim() },
+              { email: identifier.trim() },
             ],
           });
 
@@ -36,10 +49,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Please verify your account first!");
           }
 
-          const isValid = await bcrypt.compare(
-            credentials.password,
-            user.password,
-          );
+          const isValid = await bcrypt.compare(password, user.password);
 
           if (!isValid) {
             throw new Error("Invalid credentials");
@@ -87,7 +97,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/sign-in",
-    error: "/sign-in"
+    error: "/sign-in",
   },
-  secret: process.env.NEXTAUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET,
 };

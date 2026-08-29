@@ -3,22 +3,57 @@ import { IUser, User } from "@/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import * as z from "zod";
 
 export async function POST(req: NextRequest) {
   try {
-    const { username, email, password } = await req.json();
+    const schema = z.object({
+      username: z
+        .string("Username must be a string")
+        .min(4, {
+          error: (iss) =>
+            `Username must be at least ${iss.minimum} characters!`,
+        })
+        .max(10, {
+          error: (iss) => `Username can be at most ${iss.maximum} characters!`,
+        })
+        .regex(/^[a-z!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?`~]+$/, {
+          error:
+            "Username can contain only lowercase letters and special characters!",
+        }),
+      email: z.string("Email must be a string").email({
+        error: "Please enter a valid email address!",
+      }),
 
-    if ([username, email, password].some((field) => field.trim() === "")) {
+      password: z
+        .string("Password must be a string")
+        .min(4, {
+          error: (iss) =>
+            `Password must be at least ${iss.minimum} characters!`,
+        })
+        .max(10, {
+          error: (iss) => `Password can be at most ${iss.maximum} characters!`,
+        }),
+    });
+
+    const result = schema.safeParse(await req.json());
+
+    if (result.error) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields!" },
+        {
+          success: false,
+          error: result.error.issues[0].message,
+        },
         { status: 400 },
       );
     }
 
+    const { username, email, password } = result.data;
+
     await connectDB();
 
     const existingUserVerifiedByUsername = await User.findOne({
-      username: username.trim().toLowerCase(),
+      username: username,
       isVerified: true,
     });
 
