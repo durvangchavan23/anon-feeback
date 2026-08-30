@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import React, { useState } from "react";
 import Menu from "./Menu";
 import { useRouter } from "next/navigation";
@@ -32,7 +32,12 @@ function Navbar() {
     <div className="w-full bg-slate-800 sticky top-0">
       <div className="w-full max-w-7xl py-3 mx-auto flex justify-around items-center relative">
         <div>
-          <h1 className="text-2xl font-bold text-white">Anon Feedback</h1>
+          <h1
+            className="text-2xl font-bold text-white cursor-pointer"
+            onClick={() => router.replace("/")}
+          >
+            Anon Feedback
+          </h1>
         </div>
         <div>
           <button
@@ -54,6 +59,15 @@ function Navbar() {
                   {item.name}
                 </button>
               ) : null,
+            )}
+
+            {session && (
+              <button
+                className="px-3 py-1 rounded-lg cursor-pointer bg-gray-300 text-slate-500 font-bold hover:bg-gray-100"
+                onClick={() => signOut()}
+              >
+                Logout
+              </button>
             )}
           </div>
         </div>

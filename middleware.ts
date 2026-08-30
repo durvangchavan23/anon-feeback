@@ -12,13 +12,22 @@ export default withAuth(
 
         if (
           pathname.startsWith("/api/auth") ||
-          pathname === "sign-in" ||
-          pathname === "sign-up"
+          pathname === "/sign-in" ||
+          pathname === "/sign-up"
         ) {
           return true;
         }
 
-        if (pathname === "/" || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/verify") {
+        if (pathname.startsWith("/api/user/check-username")) {
+          return true;
+        }
+
+        if (
+          pathname === "/" ||
+          pathname === "/sign-in" ||
+          pathname === "/sign-up" ||
+          pathname === "/verify"
+        ) {
           return true;
         }
 
@@ -29,7 +38,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|public/).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)"],
 };

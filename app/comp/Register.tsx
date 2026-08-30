@@ -21,10 +21,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useDebounceValue } from "usehooks-ts";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   username: z
@@ -54,7 +55,41 @@ const formSchema = z.object({
 });
 
 function Register() {
+  const [debouncedUsername, setDebouncedUsername] = useDebounceValue("", 500);
   const router = useRouter();
+  const [message, setMessage] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!debouncedUsername || debouncedUsername.length < 4) {
+      setMessage("");
+      setLoading(false);
+      return;
+    }
+
+    const checkUsername = async () => {
+      setLoading(true);
+      setMessage("");
+
+      try {
+        const response = await axios.get(
+          `/api/user/check-username?username=${debouncedUsername}`,
+        );
+
+        setMessage(response.data.message || response.data.error);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          setMessage(error.response?.data?.error || "Failed to check username");
+        } else {
+          setMessage("Failed to check username");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUsername();
+  }, [debouncedUsername]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -97,7 +132,7 @@ function Register() {
     }
   };
   return (
-    <Card className="w-full mt-10 max-w-lg mx-auto shadow-2xl px-3 py-4 space-y-4">
+    <Card className="w-full mt-5 max-w-lg mx-auto shadow-2xl px-3 py-4 space-y-4">
       <CardHeader className="text-center">
         <CardTitle className="text-3xl sm:text-4xl font-bold sm:mb-4">
           Create your Anon Feedback account
@@ -124,6 +159,10 @@ function Register() {
                     {...field}
                     className="h-auto w-auto px-4 sm:py-3 sm:max-xl:text-lg!"
                     id="username"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setDebouncedUsername(e.target.value);
+                    }}
                     type="text"
                     aria-invalid={fieldState.invalid}
                     placeholder="Username"
@@ -135,6 +174,15 @@ function Register() {
                 </Field>
               )}
             />
+
+            {loading && <Loader2 className="w-6 h-6 animate-spin" />}
+            {message && (
+              <p
+                className={`${message.includes("unique") ? "text-green-400" : "text-red-600"} text-sm`}
+              >
+                {message}
+              </p>
+            )}
             <Controller
               name="email"
               control={form.control}

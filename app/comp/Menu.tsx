@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -26,7 +26,7 @@ function Menu({ setMenu }: any) {
     },
   ];
   return (
-    <div className="bg-white px-2 py-2 w-30 absolute sm:hidden flex flex-col items-center right-5 top-3 rounded-lg space-y-2 border-2 border-gray-200 duration-200">
+    <div className="bg-white px-2 py-2 w-35 absolute sm:hidden flex flex-col items-center right-5 top-3 rounded-lg space-y-2 border-2 border-gray-200 duration-200">
       <button
         className="px-3 py-1 rounded-lg cursor-pointer hover:bg-gray-300 duration-200 border border-gray-300 text-slate-500 font-bold relative left-8 mb-3"
         onClick={() => setMenu(false)}
@@ -47,6 +47,14 @@ function Menu({ setMenu }: any) {
             {item.name}
           </button>
         ) : null,
+      )}
+      {session && (
+        <button
+          className="w-full px-3 py-1 rounded-lg cursor-pointer bg-gray-300 text-slate-500 font-bold hover:bg-gray-100"
+          onClick={() => signOut()}
+        >
+          Logout
+        </button>
       )}
     </div>
   );
