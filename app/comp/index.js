@@ -4,5 +4,6 @@ import Login from "./Login";
 import Menu from "./Menu";
 import Navbar from "./Navbar";
 import Provider from "./Provider";
+import Register from "./Register";
 
-export { Container, Footer, Login, Menu, Navbar, Provider };
+export { Container, Footer, Login, Menu, Navbar, Provider, Register };

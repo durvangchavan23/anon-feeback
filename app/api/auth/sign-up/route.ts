@@ -101,7 +101,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: true, message: "User registered successfully!" },
+      {
+        success: true,
+        message: "User registered successfully! Please verify your account.",
+      },
       { status: 200 },
     );
   } catch (error) {
