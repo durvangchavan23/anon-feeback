@@ -1,5 +1,5 @@
 import mongoose, { model, models, Schema } from "mongoose";
-
+import aggregatePaginate from "mongoose-aggregate-paginate-v2"
 export interface IUser {
   _id?: mongoose.Types.ObjectId;
   username: string;
@@ -45,5 +45,7 @@ const userModel = new Schema<IUser>(
   },
   { timestamps: true },
 );
+
+userModel.plugin(aggregatePaginate)
 
 export const User = models?.User || model<IUser>("User", userModel);
