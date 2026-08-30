@@ -18,7 +18,7 @@ export default withAuth(
           return true;
         }
 
-        if (pathname === "/") {
+        if (pathname === "/" || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/verify") {
           return true;
         }
 
